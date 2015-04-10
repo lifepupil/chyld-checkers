@@ -11,7 +11,11 @@ html
 
     table#board
       tbody
-        
+        - for(var y = 0; y<8 ; y++)
+          tr
+            - for(var x = 0; x<8 ; x++)
+              td(data-x=x, data-y=y, class=((x+y)%2) ? 'valid' : '') 
+
     script(src='/vendor/jquery/dist/jquery.min.js')
     script(src='/vendor/lodash/lodash.min.js')
     script(src=isProd ? '/index.min.js' : '/index.js')
