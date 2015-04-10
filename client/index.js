@@ -75,6 +75,7 @@ function move() {
 
   switch(moveType(src, tgt, compass, isKing)) {
     case 'move':
+      movePiece($source,$target);
       // console.log('move');
 
       switchUser();
@@ -97,7 +98,8 @@ function moveType(src, tgt, compass, isKing) {
 
 function isMove(src, tgt, compass, isKing) {
   console.log(src, tgt);
-  return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x && src.y + compass.north === tgt.y (isKing && src.y + compass.south === tgt.y));
+  // debugger;
+  return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x && src.y + compass.north === tgt.y && (isKing && src.y + compass.south === tgt.y));
 
 }
 
