@@ -35,9 +35,11 @@ function switchUser() {
 function select() {
   // alert('hiya');
   $source = $(this);
-  // this next line removes selected value from all non-selected pieces
+  // this next line removes selected class from all non-selected pieces
   $('.valid').removeClass('selected');
+  // selected piece gets selected class added
   $source.addClass('selected');
+
 }
 
 function move() {
@@ -62,5 +64,52 @@ function move() {
   tgt.x = parseFloat($target.data('x'));
   tgt.y = $target.data('y') * 1;
 
-  console.log(src,tgt);
+  // console.log(src,tgt);
+
+  // direction of movement depends on which side of the board you are on
+  var compass = {};
+  compass.north = (current === 'black_piece') ? -1 : 1;
+  compass.east = (current === 'black_piece') ? 1 : -1;
+  compass.west = compass.east * -1;
+  compass.south = compass.north * -1;
+
+  switch(moveType(src, tgt, compass, isKing)) {
+    case 'move':
+      // console.log('move');
+
+      switchUser();
+      break;
+    case 'jump':
+      console.log('jump');
+      break;
+  }
+}
+
+function moveType(src, tgt, compass, isKing) {
+  if (isMove(src, tgt, compass, isKing)) {
+    return 'move';
+  }
+  if (isJump(src, tgt, compass, isKing)) {
+    return 'jump';
+  }
+
+}
+
+function isMove(src, tgt, compass, isKing) {
+  console.log(src, tgt);
+  return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x && src.y + compass.north === tgt.y (isKing && src.y + compass.south === tgt.y));
+
+}
+
+function isJump(src, tgt, compass, isKing) {}
+
+function isEnemy(){}
+
+// don't have to pass in $source but doing it anyway to resolve future confusion
+function movePiece($source, $target) {
+  var targetClasses = $target.attr('class');
+  var sourceClasses = $source.attr('class');
+
+  $target.attr('class', sourceClasses);
+  $source.attr('class', targetClasses);
 }
