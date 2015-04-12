@@ -2,12 +2,13 @@
 
 $(document).ready(init);
 
+// GLOBAL VARIABLES
 var currentPlayer = 'red_piece';
 var enemyPlayer = 'black_piece';
-
 // the $ is added because source will be a jquery object
 var $source;
 
+// FUNCTIONS
 function init() {
   initBoard();
   switchUser();
@@ -15,7 +16,6 @@ function init() {
   $('#board').on('click', '.active', select);
   // selects empty squares
   $('#board').on('click', '.empty', move);
-
 }
 
 function initBoard() {
@@ -26,34 +26,22 @@ function initBoard() {
 }
 
 function switchUser() {
-
   // sets which player is active and enemy
   currentPlayer = (currentPlayer === 'red_piece') ? 'black_piece' : 'red_piece';
   enemyPlayer = (currentPlayer === 'red_piece') ? 'black_piece' : 'red_piece';
-  // if (currentPlayer === 'red_piece') {
-  //   enemyPlayer = 'black_piece';
-  // } else {
-  //   enemyPlayer = 'red_piece';
-  // }
-
   // removes active (selectable) status from all active squares
   $('.valid').removeClass('active inactive selectedPiece');
+  // Prepended period to respective players
   $('.' + enemyPlayer).addClass('inactive');
-  // Prepended period to whomever is the currentPlayer player
   $('.' + currentPlayer).addClass('active');
-
 }
-
 
 // click activates select function
 function select() {
   // this is called when one particular square is selected
-  // alert('hiya');
-
   // the identity of the selected square is $source
   $source = $(this);
   // this next line removes selectedPiece class from all non-selectedPiece pieces
-  //
   $('.valid').removeClass('selectedPiece');
   // selected piece gets selectedPiece class added
   $source.addClass('selectedPiece');
@@ -67,8 +55,6 @@ function move() {
   }
   var $target = $(this);
 
-  // var $enemies = $('.inactive');
-
   // these objects hold the x,y coordinates of the $source and $target
   var src = {};
   var tgt = {};
@@ -76,11 +62,11 @@ function move() {
   // to turn the x,y numbers from strings into numbers you can use either method below
   // src.x = $source.data('x') * 1;
   // src.y = parseFloat($source.data('y'));
-  src.x = $source.data('x') * 1;
-  src.y = parseFloat($source.data('y'));
-  tgt.x = parseFloat($target.data('x'));
+  src.x = parseFloat($source.data('x'));
+  src.y = $source.data('y') * 1;
+  src.enemy = enemyPlayer;
+  tgt.x = $target.data('x') * 1;
   tgt.y = $target.data('y') * 1;
-  // console.log(src,tgt);
 
   // direction of movement depends on which side of the board you are on
   var compass = {};
@@ -91,15 +77,19 @@ function move() {
 
   switch(moveType(src, tgt, compass, isKing)) {
     case 'move':
-      movePiece($source,$target);
       console.log('move');
+      movePiece($source,$target);
       switchUser();
       break;
     case 'jump':
+      console.log('jump');
       movePiece($source,$target);
 
-      console.log('jump');
-      break;
+      // if (isJump(src, tgt, compass, isKing)) {
+      //     movePiece($source,$target);
+      // } else {
+      //   switchUser();
+      // }
   }
 }
 
@@ -110,72 +100,50 @@ function moveType(src, tgt, compass, isKing) {
     return 'move';
   }
   if (isJump(src, tgt, compass, isKing)) {
-    // console.log(isJump(src, tgt, compass, isKing);
     return 'jump';
   }
 }
 
 function isMove(src, tgt, compass, isKing) {
-  console.log(src, tgt);
-  // debugger;
-  return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x && src.y + compass.north === tgt.y || (isKing && src.y + compass.south === tgt.y));
+  return (
+    (src.x + compass.east === tgt.x
+    || src.x + compass.west === tgt.x)
+    && src.y + compass.north === tgt.y
+    || (isKing && src.y + compass.south === tgt.y));
 }
 
 function isJump(src, tgt, compass, isKing) {
-  // must have at least 2 conditions (1) there is an enemy in the tgt coordinate, and (2) there is an empty space two squares away along a diagona
-  var JumpPossible = (
-    src.x + (compass.east*2) === tgt.x
-  || src.x + (compass.west*2) === tgt.x
-  // && src.x + compass.east === enemy.x
-  && src.y + (compass.north*2) === tgt.y
-  || (isKing && src.y + (compass.south*2) === tgt.y)
-  // && src.x + compass.west === enemy.x
-  && isEnemy(src, compass));
+  var enemyVars = isEnemy(src, compass);
 
-  console.log(isEnemy(src, compass));
-  return JumpPossible;
+  // must have at least 2 conditions (1) there is an enemy in the tgt coordinate, and (2) there is an empty space two squares away along a diagona
+  var jumpPossible = ((src.x + (compass.east*2) === tgt.x || src.x + (compass.west*2) === tgt.x) && src.y + (compass.north*2) === tgt.y || (isKing && src.y + (compass.south*2) === tgt.y) && enemyVars[0]);
+
+  console.log(enemyVars[1])
+  if (jumpPossible) {
+    $($(enemyVars[1])).removeClass('' + src.enemy +' inactive');
+  }
+  return jumpPossible;
 }
 
 function isEnemy(src, compass) {
-  // var x = src.x + compass.east;
-  // var y = 0;
-  //
-  // var enemyExist = 0;
-  //
-  // var enemies = $('.inactive');
-  //
-  //
-  // $v = $("td[data-x='6'][data-y='1']")
-  // $v = $("td[data-x=" + x + "][data-y=" + y + "]")
-  //
-  // $v.addClass('red_piece')
-  // $v.removeClass('red_piece')
-  // $v.data('x')
-  // $v.data('y')
-  //
-  // for (var i= 0; i<enemies.length ; i++) {
-  //   x = enemies[i].data('x');
-  //   y = enemies[i].data('y');
-  //   console.log(x,y);
-  //
-  //   if (src.x + compass.east === x || src.x + compass.west === x && src.y + compass.north === y || (isKing && src.y + (compass.south === y))) {
-  //     // enemyExist
-  //     enemies[i].removeClass('red_piece');
-  //     // console.log(i);
-  //
-  //
-  //   }
-  // }
+  var xe = src.x + compass.east;
+  var xw = src.x + compass.west;
+  var yn = src.y + compass.north;
+  var ys = src.y + compass.south;
+
+  var enemyStatusPiece = [];
+  var $enemies = $('.inactive');
+
+  for (var i = 0; i<$enemies.length; i++) {
+    var $enemy = $($enemies[i]);
+
+    if ((xe === $enemy.data('x') || xw === $enemy.data('x')) && yn === $enemy.data('y') || (isKing && ys === $enemy.data('y'))) {
+        enemyStatusPiece.push(true);
+        enemyStatusPiece.push($enemies[i]);
+    }
+  }
+  return enemyStatusPiece;
 }
-
-
-  // while (src.x )
-  // enemy.x = $enemies.data('x') * 1;
-  // enemy.y = $enemies.data('y') * 1;
-  // $('.enemies').
-  // enemy.x = parseFloat($target.data('x'));
-  // enemy.y = $target.data('y') * 1;
-
 
 function isKing () {
   // you can use either of the two lines below to check whether piece is a king or not
@@ -184,7 +152,7 @@ function isKing () {
   // var isKing = $source.is('.king');
 }
 
-// don't have to pass in $source but doing it anyway to resolve future confusion
+// Chyld says: don't have to pass in $source but doing it anyway to avoid future confusion
 function movePiece($source, $target) {
   var targetClasses = $target.attr('class');
   var sourceClasses = $source.attr('class');
