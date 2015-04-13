@@ -21,12 +21,26 @@ function init() {
 
 }
 
+function computerPlayer(){
+  // first must
+  var whichPiece = Math.floor((Math.random($('.red_piece').length * 10) + 1));
+  var thisPiece = $('.red_piece')[whichPiece];
+  var whichMove = Math.floor((Math.random($('.red_piece').length * 2) + 1));
+
+}
+
 function initBoard() {
   // this grabs all tr's tht are less than 3 && the valid squares to add two classes to them
-  $('#board tr:lt(1) .valid').addClass('red_piece player');
-  $('#board tr:gt(4) .valid').addClass('black_piece player');
-  $('#board tr:lt(5):gt(0) .valid').addClass('empty');
 
+  // $('#board .valid').addClass('empty');
+  // $('#board tr:lt(2):gt(0) .valid').addClass('red_piece player');
+  // $('#board tr:lt(2):gt(0) .valid').toggleClass('empty');
+  // $('#board tr:gt(4) .valid').addClass('black_piece player');
+  // $('#board tr:gt(4) .valid').toggleClass('empty');
+
+  $('#board tr:lt(3) .valid').addClass('red_piece player');
+  $('#board tr:gt(4) .valid').addClass('black_piece player');
+  $('#board tr:lt(5):gt(2) .valid').addClass('empty');
 
   // this is only for debugging purposes
   $('#board > tbody > tr:nth-child(5) > td:nth-child(4)').addClass('red_piece player').removeClass('empty');
@@ -61,6 +75,20 @@ function select() {
   evaluateMoves();
 }
 
+function evaluateMoves() {
+  var movesObj = {};
+  movesObj.enemyEast = isEnemyEast($source,playerCompass());
+  movesObj.enemyWest = isEnemyWest($source,playerCompass());
+  movesObj.enemyJumpEast = isEnemyJumpEast($source,playerCompass());
+  movesObj.enemyJumpWest = isEnemyJumpWest($source,playerCompass());
+  movesObj.enemyEastKing = isEnemyEastKing($source,playerCompass());
+  movesObj.enemyWestKing = isEnemyWestKing($source,playerCompass());
+  movesObj.enemyJumpEastKing = isEnemyJumpEastKing($source,playerCompass());
+  movesObj.enemyJumpWestKing = isEnemyJumpWestKing($source,playerCompass());
+
+  return movesObj;
+}
+
 function isEnemyEast($source, compass) {
   var x = $($source).data('x') + compass.east;
   var y = $($source).data('y') + compass.north;
@@ -72,18 +100,20 @@ function isEnemyEast($source, compass) {
 }
 
 function isEnemyEastKing($source, compass) {
-    var kingness = $source.hasClass('black_king');
-    if (kingness) {
-      var x = $($source).data('x') + compass.east;
-      var y = $($source).data('y') + compass.south;
-      var emptyBool = $('[data-x='+x+'][data-y='+y+']').hasClass('empty');
-      if (emptyBool) {
-        $('[data-x='+x+'][data-y='+y+']').addClass('possibleMove');
-      }
-      return emptyBool;
-    } else {
-      return false;
+  var whichKing = (currentPlayer === 'red_piece') ? 'red_king' : 'black_king';
+  var kingness = $source.hasClass(whichKing);
+  console.log(whichKing,kingness)
+  if (kingness) {
+    var x = $($source).data('x') + compass.east;
+    var y = $($source).data('y') + compass.south;
+    var emptyBool = $('[data-x='+x+'][data-y='+y+']').hasClass('empty');
+    if (emptyBool) {
+      $('[data-x='+x+'][data-y='+y+']').addClass('possibleMove');
     }
+    return emptyBool;
+  } else {
+    return false;
+  }
 }
 
 function isEnemyWest($source, compass) {
@@ -94,6 +124,26 @@ function isEnemyWest($source, compass) {
     $('[data-x='+x+'][data-y='+y+']').addClass('possibleMove');
   }
   return emptyBool;
+}
+
+function isEnemyWestKing($source, compass) {
+  var whichKing = (currentPlayer === 'red_piece') ? 'red_king' : 'black_king';
+  var kingness = $source.hasClass(whichKing);
+
+  if (kingness) {
+    var x = $($source).data('x') + compass.west;
+    var y = $($source).data('y') + compass.south;
+
+    // tests if the possible move is empty
+    var emptyBool = $('[data-x='+x+'][data-y='+y+']').hasClass('empty');
+    if (emptyBool) {
+      $('[data-x='+x+'][data-y='+y+']').addClass('possibleMove');
+    }
+    return emptyBool;
+  // not a king
+  } else {
+    return false;
+  }
 }
 
 function isEnemyJumpEast($source, compass) {
@@ -114,6 +164,62 @@ function isEnemyJumpEast($source, compass) {
     return false;
   }
 }
+
+function isEnemyJumpWestKing($source, compass) {
+    var whichKing = (currentPlayer === 'red_piece') ? 'red_king' : 'black_king';
+    var kingness = $source.hasClass(whichKing);
+
+    if (kingness) {
+      var x = $($source).data('x') + compass.west;
+      var y = $($source).data('y') + compass.south;
+      var x2 = $($source).data('x') + (compass.west * 2);
+      var y2 = $($source).data('y') + (compass.south * 2);
+
+      // the line $('[data-x='+x+'][data-y='+y+']') grabs only the td that satisfies x and y values
+      var enemyBool = $('[data-x='+x+'][data-y='+y+']').hasClass(enemyPlayer);
+      var empty2xBool = $('[data-x='+x2+'][data-y='+y2+']').hasClass('empty');
+
+      if (empty2xBool && enemyBool) {
+        $('[data-x='+x2+'][data-y='+y2+']').addClass('possibleJump');
+        $('[data-x='+x+'][data-y='+y+']').addClass('jumpedPiece');
+        return true;
+      } else {
+        return false;
+      }
+    // this is if the source piece is not a kind
+    } else {
+      return false;
+  }
+}
+
+
+function isEnemyJumpEastKing($source, compass) {
+    var whichKing = (currentPlayer === 'red_piece') ? 'red_king' : 'black_king';
+    var kingness = $source.hasClass(whichKing);
+
+    if (kingness) {
+      var x = $($source).data('x') + compass.east;
+      var y = $($source).data('y') + compass.south;
+      var x2 = $($source).data('x') + (compass.east * 2);
+      var y2 = $($source).data('y') + (compass.south * 2);
+
+      // the line $('[data-x='+x+'][data-y='+y+']') grabs only the td that satisfies x and y values
+      var enemyBool = $('[data-x='+x+'][data-y='+y+']').hasClass(enemyPlayer);
+      var empty2xBool = $('[data-x='+x2+'][data-y='+y2+']').hasClass('empty');
+
+      if (empty2xBool && enemyBool) {
+        $('[data-x='+x2+'][data-y='+y2+']').addClass('possibleJump');
+        $('[data-x='+x+'][data-y='+y+']').addClass('jumpedPiece');
+        return true;
+      } else {
+        return false;
+      }
+    // this is if the source piece is not a kind
+    } else {
+      return false;
+  }
+}
+
 
 function isEnemyJumpWest($source, compass) {
   var x = $($source).data('x') + compass.west;
@@ -216,13 +322,4 @@ function winCondition(){
     var WINSTR = (currentPlayer + ' WINS!!');
     alert(WINSTR);
   }
-}
-
-function evaluateMoves() {
-  var movesObj = {};
-  movesObj.enemyEast = isEnemyEast($source,playerCompass());
-  movesObj.enemyWest = isEnemyWest($source,playerCompass());
-  movesObj.enemyJumpEast = isEnemyJumpEast($source,playerCompass());
-  movesObj.enemyJumpWest = isEnemyJumpWest($source,playerCompass());
-  return movesObj;
 }
