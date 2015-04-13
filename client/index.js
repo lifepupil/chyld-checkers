@@ -22,9 +22,14 @@ function init() {
 }
 
 function computerPlayer(){
-  // first must
+  // first must randomly select a piece
   var whichPiece = Math.floor((Math.random($('.red_piece').length * 10) + 1));
   var thisPiece = $('.red_piece')[whichPiece];
+
+  // then must test if the piece has any possible moves
+  // if not, then pick a new piece and retest
+
+  // use evaluateMoves function and a switch to randomly select a move for the piece
   var whichMove = Math.floor((Math.random($('.red_piece').length * 2) + 1));
 
 }
